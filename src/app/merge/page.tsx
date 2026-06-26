@@ -2,7 +2,11 @@
 
 import { useState } from "react";
 import { FileDropzone } from "@/components/FileDropzone";
-import { FileListDnD, toListedFiles, type ListedFile } from "@/components/FileListDnD";
+import {
+  FileListDnD,
+  toListedPdfFiles,
+  type ListedFile,
+} from "@/components/FileListDnD";
 import { ProgressBar } from "@/components/ProgressBar";
 import { ToolLayout } from "@/components/ToolLayout";
 import { downloadPdf } from "@/lib/pdf/download";
@@ -15,10 +19,27 @@ export default function MergePage() {
   );
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
+  const [picking, setPicking] = useState(false);
+
+  async function handleAddFiles(picked: File[]) {
+    setPicking(true);
+    setError(null);
+    try {
+      const listed = await toListedPdfFiles(picked);
+      setItems((prev) => [...prev, ...listed]);
+      setStatus("idle");
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "PDF 파일을 읽을 수 없습니다.",
+      );
+      setStatus("error");
+    } finally {
+      setPicking(false);
+    }
+  }
 
   async function handleMerge() {
-    const files = items.map((i) => i.file);
-    if (files.length < 2) {
+    if (items.length < 2) {
       setError("병합하려면 PDF 파일을 2개 이상 선택하세요.");
       setStatus("error");
       return;
@@ -26,10 +47,10 @@ export default function MergePage() {
 
     setStatus("working");
     setError(null);
-    setProgress({ current: 0, total: files.length });
+    setProgress({ current: 0, total: items.length });
 
     try {
-      const bytes = await mergePdfs(files, (current, total) =>
+      const bytes = await mergePdfs(items, (current, total) =>
         setProgress({ current, total }),
       );
       downloadPdf(bytes, "merged.pdf");
@@ -47,8 +68,9 @@ export default function MergePage() {
     >
       <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
         <FileDropzone
-          onFiles={(picked) =>
-            setItems((prev) => [...prev, ...toListedFiles(picked)])
+          onFiles={handleAddFiles}
+          label={
+            picking ? "PDF 읽는 중…" : "PDF 파일 선택 (드래그 또는 클릭)"
           }
         />
 
@@ -73,7 +95,7 @@ export default function MergePage() {
         <button
           type="button"
           onClick={handleMerge}
-          disabled={items.length < 2 || status === "working"}
+          disabled={items.length < 2 || status === "working" || picking}
           className="mt-6 w-full rounded-xl bg-zinc-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-300"
         >
           {status === "working" ? "처리 중…" : "병합 후 다운로드"}

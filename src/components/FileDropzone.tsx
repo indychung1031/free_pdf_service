@@ -1,9 +1,10 @@
 "use client";
 
 import { useRef } from "react";
+import { isPdfFile } from "@/lib/pdf/read-bytes";
 
 type FileDropzoneProps = {
-  onFiles: (files: File[]) => void;
+  onFiles: (files: File[]) => void | Promise<void>;
   multiple?: boolean;
   label?: string;
 };
@@ -15,11 +16,8 @@ export function FileDropzone({
 }: FileDropzoneProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
-  function pickPdfFiles(fileList: FileList | null) {
-    const pdfs = Array.from(fileList ?? []).filter(
-      (f) => f.type === "application/pdf",
-    );
-    if (pdfs.length > 0) onFiles(pdfs);
+  function pickPdfFiles(fileList: FileList | null): File[] {
+    return Array.from(fileList ?? []).filter(isPdfFile);
   }
 
   return (
@@ -27,11 +25,15 @@ export function FileDropzone({
       <input
         ref={inputRef}
         type="file"
-        accept="application/pdf"
+        accept=".pdf,application/pdf"
         multiple={multiple}
         className="hidden"
-        onChange={(e) => {
-          pickPdfFiles(e.target.files);
+        onChange={async (e) => {
+          const pdfs = pickPdfFiles(e.target.files);
+          if (pdfs.length > 0) {
+            await onFiles(pdfs);
+          }
+          // iOS: 파일 bytes를 읽은 뒤에만 input 초기화
           e.target.value = "";
         }}
       />
@@ -52,7 +54,7 @@ export function FileDropzone({
         onDrop={(e) => {
           e.preventDefault();
           e.currentTarget.classList.remove("border-zinc-500", "bg-zinc-50");
-          pickPdfFiles(e.dataTransfer.files);
+          void onFiles(pickPdfFiles(e.dataTransfer.files));
         }}
         className="w-full cursor-pointer rounded-xl border-2 border-dashed border-zinc-300 px-4 py-10 text-center text-sm text-zinc-600 transition hover:border-zinc-400 hover:bg-zinc-50"
       >

@@ -18,7 +18,9 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-export type ListedFile = { id: string; file: File };
+import { readPdfBytes } from "@/lib/pdf/read-bytes";
+
+export type ListedFile = { id: string; name: string; bytes: Uint8Array };
 
 type FileListDnDProps = {
   items: ListedFile[];
@@ -60,7 +62,7 @@ function SortableFileItem({
         ⠿
       </button>
       <span className="min-w-0 flex-1 truncate">
-        {index + 1}. {item.file.name}
+        {index + 1}. {item.name}
       </span>
       <button
         type="button"
@@ -120,9 +122,16 @@ export function FileListDnD({ items, onReorder, onRemove }: FileListDnDProps) {
   );
 }
 
-export function toListedFiles(files: File[]): ListedFile[] {
-  return files.map((file) => ({
-    id: crypto.randomUUID(),
-    file,
-  }));
+/** 선택 직후 bytes를 메모리에 보관 (iOS File handle 무효화 방지) */
+export async function toListedPdfFiles(files: File[]): Promise<ListedFile[]> {
+  const items: ListedFile[] = [];
+  for (const file of files) {
+    const bytes = await readPdfBytes(file);
+    items.push({
+      id: crypto.randomUUID(),
+      name: file.name,
+      bytes,
+    });
+  }
+  return items;
 }
