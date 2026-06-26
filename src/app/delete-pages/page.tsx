@@ -8,10 +8,13 @@ import { ToolLayout } from "@/components/ToolLayout";
 import { WorkbenchCta } from "@/components/WorkbenchCta";
 import { deletePages } from "@/lib/pdf/delete-pages";
 import { downloadPdf } from "@/lib/pdf/download";
-import { readPageCount } from "@/lib/pdf/load";
+import {
+  storePdfWithPageCount,
+  type StoredPdf,
+} from "@/lib/pdf/stored-pdf";
 
 export default function DeletePagesPage() {
-  const [file, setFile] = useState<File | null>(null);
+  const [pdf, setPdf] = useState<StoredPdf | null>(null);
   const [pageCount, setPageCount] = useState<number | null>(null);
   const [range, setRange] = useState("");
   const [status, setStatus] = useState<"idle" | "working" | "done" | "error">(
@@ -21,22 +24,26 @@ export default function DeletePagesPage() {
 
   async function handleFileSelect(picked: File[]) {
     const next = picked[0] ?? null;
-    setFile(next);
+    setPdf(null);
+    setPageCount(null);
     setStatus("idle");
     setError(null);
-    if (!next) {
-      setPageCount(null);
-      return;
-    }
+    if (!next) return;
+
     try {
-      setPageCount(await readPageCount(next));
-    } catch {
-      setPageCount(null);
+      const stored = await storePdfWithPageCount(next);
+      setPdf({ name: stored.name, bytes: stored.bytes });
+      setPageCount(stored.pageCount);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "PDF 파일을 읽을 수 없습니다.",
+      );
+      setStatus("error");
     }
   }
 
   function handleClearWork() {
-    setFile(null);
+    setPdf(null);
     setPageCount(null);
     setRange("");
     setStatus("idle");
@@ -44,7 +51,7 @@ export default function DeletePagesPage() {
   }
 
   async function handleDelete() {
-    if (!file) {
+    if (!pdf) {
       setError("PDF 파일을 선택하세요.");
       setStatus("error");
       return;
@@ -54,8 +61,8 @@ export default function DeletePagesPage() {
     setError(null);
 
     try {
-      const bytes = await deletePages(file, range);
-      const name = file.name.replace(/\.pdf$/i, "") + "_deleted.pdf";
+      const bytes = await deletePages(pdf.bytes, range);
+      const name = pdf.name.replace(/\.pdf$/i, "") + "_deleted.pdf";
       downloadPdf(bytes, name);
       setStatus("done");
     } catch (err) {
@@ -80,9 +87,9 @@ export default function DeletePagesPage() {
           onFiles={handleFileSelect}
         />
 
-        {file && (
+        {pdf && (
           <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-zinc-600">선택: {file.name}</p>
+            <p className="text-sm text-zinc-600">선택: {pdf.name}</p>
             <ClearWorkButton
               onClear={handleClearWork}
               disabled={status === "working"}
@@ -102,7 +109,7 @@ export default function DeletePagesPage() {
         <button
           type="button"
           onClick={handleDelete}
-          disabled={!file || !range.trim() || status === "working"}
+          disabled={!pdf || !range.trim() || status === "working"}
           className="mt-6 w-full rounded-xl bg-zinc-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-300"
         >
           {status === "working" ? "처리 중…" : "삭제 후 다운로드"}

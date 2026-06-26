@@ -1,17 +1,17 @@
-import { loadPdfFromFile } from "./load";
+import { loadPdfFromBytes } from "./load";
 import { parsePageRange } from "./page-range";
 
 /**
  * @param insertAt 1-based position in the base document where new pages are inserted (before this page; use pageCount+1 for append)
  */
 export async function insertPages(
-  baseFile: File,
-  insertFile: File,
+  baseBytes: Uint8Array,
+  insertBytes: Uint8Array,
   insertRangeInput: string,
   insertAt: number,
 ): Promise<Uint8Array> {
-  const base = await loadPdfFromFile(baseFile);
-  const insertSource = await loadPdfFromFile(insertFile);
+  const base = await loadPdfFromBytes(baseBytes);
+  const insertSource = await loadPdfFromBytes(insertBytes);
   const baseCount = base.getPageCount();
   const insertCount = insertSource.getPageCount();
 

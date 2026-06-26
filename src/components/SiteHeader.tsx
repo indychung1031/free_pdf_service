@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { AdminStatusLink } from "@/components/AdminStatusLink";
 import { SiteHeaderActions } from "@/components/SiteHeaderActions";
 import { LOGO_ALT, LOGO_PATH, SERVICE_NAME } from "@/lib/branding";
 
@@ -24,7 +25,10 @@ export function SiteHeader() {
           <SiteHeaderActions />
         </div>
         <p className="max-w-[8rem] shrink-0 text-right text-[11px] leading-tight text-zinc-500 sm:max-w-none sm:text-xs">
-          {SERVICE_NAME}
+          <span className="inline-flex items-center justify-end gap-1.5">
+            <AdminStatusLink />
+            {SERVICE_NAME}
+          </span>
         </p>
       </div>
     </header>

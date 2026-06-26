@@ -1,12 +1,12 @@
 import { PDFDocument } from "pdf-lib";
-import { loadPdfFromFile } from "./load";
+import { loadPdfFromBytes } from "./load";
 import { parsePageRange } from "./page-range";
 
 export async function deletePages(
-  file: File,
+  bytes: Uint8Array,
   deleteRangeInput: string,
 ): Promise<Uint8Array> {
-  const source = await loadPdfFromFile(file);
+  const source = await loadPdfFromBytes(bytes);
   const pageCount = source.getPageCount();
   const toDelete = new Set(parsePageRange(deleteRangeInput, pageCount));
 

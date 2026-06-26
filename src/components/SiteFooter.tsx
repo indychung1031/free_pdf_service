@@ -1,9 +1,12 @@
 import Link from "next/link";
+import { AdSlot } from "@/components/AdSlot";
 
 export function SiteFooter() {
   return (
     <footer className="border-t border-zinc-200 bg-white">
-      <div className="mx-auto flex w-full max-w-2xl flex-col gap-3 px-4 py-6 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+      <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-4 py-6 sm:px-6">
+        <AdSlot slot="footer" className="mx-auto w-full max-w-xl" />
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-xs text-zinc-400">
           © 2026 Innovo Free PDF solution — 파일은 서버로 전송되지 않습니다
         </p>
@@ -27,6 +30,7 @@ export function SiteFooter() {
             개인정보처리방침
           </Link>
         </nav>
+        </div>
       </div>
     </footer>
   );

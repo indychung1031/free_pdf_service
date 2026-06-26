@@ -8,11 +8,14 @@ import { ToolLayout } from "@/components/ToolLayout";
 import { WorkbenchCta } from "@/components/WorkbenchCta";
 import { downloadPdf } from "@/lib/pdf/download";
 import { insertPages } from "@/lib/pdf/insert";
-import { readPageCount } from "@/lib/pdf/load";
+import {
+  storePdfWithPageCount,
+  type StoredPdf,
+} from "@/lib/pdf/stored-pdf";
 
 export default function InsertPage() {
-  const [baseFile, setBaseFile] = useState<File | null>(null);
-  const [insertFile, setInsertFile] = useState<File | null>(null);
+  const [basePdf, setBasePdf] = useState<StoredPdf | null>(null);
+  const [insertPdf, setInsertPdf] = useState<StoredPdf | null>(null);
   const [basePageCount, setBasePageCount] = useState<number | null>(null);
   const [insertPageCount, setInsertPageCount] = useState<number | null>(null);
   const [insertRange, setInsertRange] = useState("");
@@ -24,13 +27,14 @@ export default function InsertPage() {
 
   async function handleBaseFileSelect(picked: File[]) {
     const next = picked[0] ?? null;
-    setBaseFile(next);
-    if (!next) {
-      setBasePageCount(null);
-      return;
-    }
+    setBasePdf(null);
+    setBasePageCount(null);
+    if (!next) return;
+
     try {
-      setBasePageCount(await readPageCount(next));
+      const stored = await storePdfWithPageCount(next);
+      setBasePdf({ name: stored.name, bytes: stored.bytes });
+      setBasePageCount(stored.pageCount);
     } catch {
       setBasePageCount(null);
     }
@@ -38,21 +42,22 @@ export default function InsertPage() {
 
   async function handleInsertFileSelect(picked: File[]) {
     const next = picked[0] ?? null;
-    setInsertFile(next);
-    if (!next) {
-      setInsertPageCount(null);
-      return;
-    }
+    setInsertPdf(null);
+    setInsertPageCount(null);
+    if (!next) return;
+
     try {
-      setInsertPageCount(await readPageCount(next));
+      const stored = await storePdfWithPageCount(next);
+      setInsertPdf({ name: stored.name, bytes: stored.bytes });
+      setInsertPageCount(stored.pageCount);
     } catch {
       setInsertPageCount(null);
     }
   }
 
   function handleClearWork() {
-    setBaseFile(null);
-    setInsertFile(null);
+    setBasePdf(null);
+    setInsertPdf(null);
     setBasePageCount(null);
     setInsertPageCount(null);
     setInsertRange("");
@@ -61,10 +66,10 @@ export default function InsertPage() {
     setError(null);
   }
 
-  const hasWork = Boolean(baseFile || insertFile);
+  const hasWork = Boolean(basePdf || insertPdf);
 
   async function handleInsert() {
-    if (!baseFile || !insertFile) {
+    if (!basePdf || !insertPdf) {
       setError("기본 PDF와 삽입할 PDF를 모두 선택하세요.");
       setStatus("error");
       return;
@@ -82,12 +87,12 @@ export default function InsertPage() {
 
     try {
       const bytes = await insertPages(
-        baseFile,
-        insertFile,
+        basePdf.bytes,
+        insertPdf.bytes,
         insertRange,
         at,
       );
-      const name = baseFile.name.replace(/\.pdf$/i, "") + "_inserted.pdf";
+      const name = basePdf.name.replace(/\.pdf$/i, "") + "_inserted.pdf";
       downloadPdf(bytes, name);
       setStatus("done");
     } catch (err) {
@@ -113,9 +118,9 @@ export default function InsertPage() {
             label="기본 PDF 선택"
             onFiles={handleBaseFileSelect}
           />
-          {baseFile && (
+          {basePdf && (
             <p className="mt-2 text-sm text-zinc-600">
-              {baseFile.name}
+              {basePdf.name}
               {basePageCount !== null && ` · ${basePageCount}페이지`}
             </p>
           )}
@@ -128,9 +133,9 @@ export default function InsertPage() {
             label="삽입할 PDF 선택"
             onFiles={handleInsertFileSelect}
           />
-          {insertFile && (
+          {insertPdf && (
             <p className="mt-2 text-sm text-zinc-600">
-              {insertFile.name}
+              {insertPdf.name}
               {insertPageCount !== null && ` · ${insertPageCount}페이지`}
             </p>
           )}
@@ -174,8 +179,8 @@ export default function InsertPage() {
           type="button"
           onClick={handleInsert}
           disabled={
-            !baseFile ||
-            !insertFile ||
+            !basePdf ||
+            !insertPdf ||
             !insertRange.trim() ||
             status === "working"
           }

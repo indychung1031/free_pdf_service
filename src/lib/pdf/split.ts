@@ -1,16 +1,17 @@
 import { PDFDocument } from "pdf-lib";
-import { loadPdfFromFile } from "./load";
+import { loadPdfFromBytes } from "./load";
 import { parsePageRange } from "./page-range";
 
 export type SplitMode = "extract" | "each-page";
 
 export async function splitPdf(
-  file: File,
+  bytes: Uint8Array,
+  fileName: string,
   mode: SplitMode,
   rangeInput?: string,
   onProgress?: (current: number, total: number) => void,
 ): Promise<{ name: string; bytes: Uint8Array }[]> {
-  const source = await loadPdfFromFile(file);
+  const source = await loadPdfFromBytes(bytes);
   const pageCount = source.getPageCount();
 
   if (mode === "extract") {
@@ -22,12 +23,12 @@ export async function splitPdf(
     const out = await PDFDocument.create();
     const pages = await out.copyPages(source, indices);
     pages.forEach((page) => out.addPage(page));
-    const baseName = file.name.replace(/\.pdf$/i, "");
+    const baseName = fileName.replace(/\.pdf$/i, "");
     return [{ name: `${baseName}_extract.pdf`, bytes: await out.save() }];
   }
 
   const results: { name: string; bytes: Uint8Array }[] = [];
-  const baseName = file.name.replace(/\.pdf$/i, "");
+  const baseName = fileName.replace(/\.pdf$/i, "");
 
   for (let i = 0; i < pageCount; i++) {
     onProgress?.(i + 1, pageCount);
