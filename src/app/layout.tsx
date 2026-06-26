@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
-import { SERVICE_NAME, SERVICE_TAGLINE } from "@/lib/branding";
+import { SERVICE_NAME, SERVICE_TAGLINE, SITE_URL } from "@/lib/branding";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -16,6 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
     default: SERVICE_NAME,
     template: `%s | ${SERVICE_NAME}`,

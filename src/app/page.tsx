@@ -9,6 +9,11 @@ export const metadata: Metadata = {
 
 const tools = [
   {
+    href: "/workbench",
+    title: "PDF 작업실",
+    description: "PDF 여러 개를 추가하고, 페이지를 합치고·빼고·순서를 바꿉니다.",
+  },
+  {
     href: "/organizer",
     title: "페이지 Organizer",
     description: "썸네일 그리드에서 드래그·회전·삭제 후 저장합니다.",
