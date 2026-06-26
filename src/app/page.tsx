@@ -4,19 +4,15 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "무료 PDF 편집 도구 — 브라우저에서 처리, 서버 전송 없음",
   description:
-    "PDF 병합·분할·페이지 삭제·삽입·Organizer. 파일은 브라우저에서만 처리되며 서버로 1바이트도 전송되지 않습니다. 워터마크 없음, 횟수 제한 없음.",
+    "PDF 병합·분할·페이지 삭제·삽입·작업실. 파일은 브라우저에서만 처리되며 서버로 1바이트도 전송되지 않습니다. 워터마크 없음, 횟수 제한 없음.",
 };
 
 const tools = [
   {
     href: "/workbench",
     title: "PDF 작업실",
-    description: "PDF 여러 개를 추가하고, 페이지를 합치고·빼고·순서를 바꿉니다.",
-  },
-  {
-    href: "/organizer",
-    title: "페이지 Organizer",
-    description: "썸네일 그리드에서 드래그·회전·삭제 후 저장합니다.",
+    description:
+      "PDF 여러 개·한 개 모두 — 페이지 합치기·삭제·순서 변경·삽입을 한 화면에서.",
   },
   {
     href: "/merge",

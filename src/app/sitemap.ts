@@ -10,7 +10,6 @@ const PATHS: { path: string; priority: number }[] = [
   { path: "/split", priority: 0.85 },
   { path: "/delete-pages", priority: 0.85 },
   { path: "/insert", priority: 0.85 },
-  { path: "/organizer", priority: 0.85 },
   { path: "/faq", priority: 0.7 },
   { path: "/privacy", priority: 0.3 },
   { path: "/terms", priority: 0.3 },

@@ -74,9 +74,9 @@ const faqs = [
       {
         q: "모바일(스마트폰·태블릿)에서도 사용할 수 있나요?",
         en_q: "Does it work on mobile devices?",
-        a: "네, 모바일 브라우저에서도 동작합니다. 단, 대용량 파일 처리나 Organizer 드래그 작업은 PC 환경이 더 편리합니다.",
+        a: "네, 모바일 브라우저에서도 동작합니다. 단, 대용량 파일이나 PDF 작업실의 드래그 편집은 PC 환경이 더 편리합니다.",
         en_a:
-          "Yes, it works in mobile browsers. However, processing large files or using drag-and-drop in the Organizer is more comfortable on a desktop.",
+          "Yes, it works in mobile browsers. However, large files and drag-and-drop editing in the PDF Workbench are more comfortable on a desktop.",
       },
       {
         q: "어떤 브라우저를 지원하나요?",
