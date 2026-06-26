@@ -5,6 +5,7 @@ import { ClearWorkButton } from "@/components/ClearWorkButton";
 import { FileDropzone } from "@/components/FileDropzone";
 import { PageRangeInput } from "@/components/PageRangeInput";
 import { ToolLayout } from "@/components/ToolLayout";
+import { WorkbenchCta } from "@/components/WorkbenchCta";
 import { downloadPdf } from "@/lib/pdf/download";
 import { insertPages } from "@/lib/pdf/insert";
 import { readPageCount } from "@/lib/pdf/load";
@@ -102,6 +103,8 @@ export default function InsertPage() {
       title="페이지 삽입"
       description="다른 PDF의 페이지를 기본 문서의 원하는 위치에 넣습니다."
     >
+      <WorkbenchCta hint="여러 PDF를 합치고 원하는 위치에 페이지를 넣으려면" />
+
       <section className="flex flex-col gap-6 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
         <div>
           <p className="mb-2 text-sm font-medium text-zinc-700">1. 기본 PDF</p>

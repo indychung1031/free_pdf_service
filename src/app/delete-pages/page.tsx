@@ -5,6 +5,7 @@ import { ClearWorkButton } from "@/components/ClearWorkButton";
 import { FileDropzone } from "@/components/FileDropzone";
 import { PageRangeInput } from "@/components/PageRangeInput";
 import { ToolLayout } from "@/components/ToolLayout";
+import { WorkbenchCta } from "@/components/WorkbenchCta";
 import { deletePages } from "@/lib/pdf/delete-pages";
 import { downloadPdf } from "@/lib/pdf/download";
 import { readPageCount } from "@/lib/pdf/load";
@@ -70,6 +71,8 @@ export default function DeletePagesPage() {
       title="페이지 삭제"
       description="지정한 페이지를 제거한 새 PDF를 만듭니다."
     >
+      <WorkbenchCta hint="여러 PDF를 합친 뒤 페이지를 삭제·재배치하려면" />
+
       <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
         <FileDropzone
           multiple={false}
