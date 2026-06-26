@@ -12,6 +12,7 @@ import { exportWorkbenchPdf } from "@/lib/pdf/workbench-export";
 import {
   createWorkbenchPages,
   createWorkbenchSource,
+  mergePagesAt,
   type WorkbenchPage,
   type WorkbenchSource,
 } from "@/lib/pdf/workbench-types";
@@ -32,6 +33,9 @@ const WorkbenchPageGrid = dynamic(
 export default function WorkbenchPage() {
   const [sources, setSources] = useState<WorkbenchSource[]>([]);
   const [pages, setPages] = useState<WorkbenchPage[]>([]);
+  const [insertAfterPageId, setInsertAfterPageId] = useState<string | null>(
+    null,
+  );
   const [zoom, setZoom] = useState(2);
   const [status, setStatus] = useState<"idle" | "working" | "done" | "error">(
     "idle",
@@ -57,7 +61,7 @@ export default function WorkbenchPage() {
 
       clearPdfDocumentCache();
       setSources((prev) => [...prev, ...newSources]);
-      setPages((prev) => [...prev, ...newPages]);
+      setPages((prev) => mergePagesAt(prev, newPages, insertAfterPageId));
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "PDF를 읽을 수 없습니다.",
@@ -70,6 +74,7 @@ export default function WorkbenchPage() {
     clearPdfDocumentCache();
     setSources([]);
     setPages([]);
+    setInsertAfterPageId(null);
     setZoom(2);
     setStatus("idle");
     setError(null);
@@ -108,7 +113,7 @@ export default function WorkbenchPage() {
     <ToolLayout
       wide
       title="PDF 작업실"
-      description="PDF 여러 개를 추가하고, 페이지를 합치고·빼고·순서를 바꾼 뒤 하나의 PDF로 저장합니다."
+      description="PDF 여러 개를 추가하고, 페이지를 합치고·빼고·순서를 바꾼 뒤 하나의 PDF로 저장합니다. 페이지를 클릭하면 그 뒤에 PDF를 삽입할 수 있습니다."
     >
       <section className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm sm:p-6">
         <FileDropzone
@@ -131,7 +136,27 @@ export default function WorkbenchPage() {
 
         {pageCount > 0 && (
           <>
-            <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="mt-6 flex flex-col gap-3">
+              <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs text-zinc-600">
+                {insertAfterPageId ? (
+                  <>
+                    선택한 페이지 <strong>뒤</strong>에 다음 PDF가 삽입됩니다.{" "}
+                    <button
+                      type="button"
+                      className="font-medium text-blue-700 underline hover:text-blue-900"
+                      onClick={() => setInsertAfterPageId(null)}
+                    >
+                      끝에 추가로 변경
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    PDF는 목록 <strong>끝</strong>에 추가됩니다. 썸네일을
+                    클릭하면 그 페이지 <strong>뒤</strong>에 삽입할 수 있습니다.
+                  </>
+                )}
+              </div>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <label className="flex flex-wrap items-center gap-2 text-sm text-zinc-700">
                 미리보기 확대/축소
                 <input
@@ -146,8 +171,9 @@ export default function WorkbenchPage() {
                 <span className="text-xs text-zinc-400">작게 ← → 크게</span>
               </label>
               <p className="text-xs text-zinc-500">
-                ⠿ 드래그로 순서 변경 · 호버 시 회전·삭제
+                ⠿ 드래그로 순서 변경 · 클릭으로 삽입 위치 · 호버 시 회전·삭제
               </p>
+            </div>
             </div>
 
             <div className="mt-4 max-h-[60vh] overflow-y-auto pr-1">
@@ -155,6 +181,8 @@ export default function WorkbenchPage() {
                 pages={pages}
                 sources={sources}
                 zoom={zoom}
+                insertAfterPageId={insertAfterPageId}
+                onInsertAfterChange={setInsertAfterPageId}
                 onChange={setPages}
               />
             </div>

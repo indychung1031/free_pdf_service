@@ -1,6 +1,8 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/branding";
 
+export const dynamic = "force-static";
+
 const PATHS: { path: string; priority: number }[] = [
   { path: "", priority: 1 },
   { path: "/workbench", priority: 0.9 },

@@ -60,3 +60,19 @@ export function createWorkbenchPages(
     rotation: 0,
   }));
 }
+
+/** insertAfterPageId 뒤에 newPages 삽입. null이면 목록 끝에 추가 */
+export function mergePagesAt(
+  existing: WorkbenchPage[],
+  newPages: WorkbenchPage[],
+  insertAfterPageId: string | null,
+): WorkbenchPage[] {
+  if (newPages.length === 0) return existing;
+  if (!insertAfterPageId) return [...existing, ...newPages];
+
+  const idx = existing.findIndex((p) => p.id === insertAfterPageId);
+  if (idx === -1) return [...existing, ...newPages];
+
+  const at = idx + 1;
+  return [...existing.slice(0, at), ...newPages, ...existing.slice(at)];
+}

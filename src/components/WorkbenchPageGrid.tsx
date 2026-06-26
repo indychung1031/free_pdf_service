@@ -33,6 +33,8 @@ type WorkbenchPageGridProps = {
   pages: WorkbenchPage[];
   sources: WorkbenchSource[];
   zoom: number;
+  insertAfterPageId: string | null;
+  onInsertAfterChange: (pageId: string | null) => void;
   onChange: (pages: WorkbenchPage[]) => void;
 };
 
@@ -42,6 +44,8 @@ function SortableWorkbenchCard({
   source,
   cardWidth,
   renderWidth,
+  isInsertTarget,
+  onSelectInsertAfter,
   onDelete,
   onRotate,
 }: {
@@ -50,6 +54,8 @@ function SortableWorkbenchCard({
   source: WorkbenchSource;
   cardWidth: number;
   renderWidth: number;
+  isInsertTarget: boolean;
+  onSelectInsertAfter: () => void;
   onDelete: () => void;
   onRotate: () => void;
 }) {
@@ -77,7 +83,11 @@ function SortableWorkbenchCard({
     <div
       ref={setNodeRef}
       style={{ ...style, width: cardWidth }}
-      className="group relative flex flex-col gap-1 rounded-xl border border-zinc-200 bg-white p-2 shadow-sm"
+      className={`group relative flex flex-col gap-1 rounded-xl border bg-white p-2 shadow-sm ${
+        isInsertTarget
+          ? "border-blue-500 ring-2 ring-blue-200"
+          : "border-zinc-200"
+      }`}
     >
       <button
         type="button"
@@ -96,7 +106,16 @@ function SortableWorkbenchCard({
         {source.fileName}
       </p>
 
-      <div className="pointer-events-none">
+      <div
+        className="pointer-events-auto cursor-pointer"
+        onClick={onSelectInsertAfter}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") onSelectInsertAfter();
+        }}
+        role="button"
+        tabIndex={0}
+        title="클릭하면 다음 추가 PDF가 이 페이지 뒤에 삽입됩니다"
+      >
         <PdfPageThumbnail
           key={`${page.id}-${renderWidth}`}
           data={pdfData}
@@ -134,6 +153,8 @@ export function WorkbenchPageGrid({
   pages,
   sources,
   zoom,
+  insertAfterPageId,
+  onInsertAfterChange,
   onChange,
 }: WorkbenchPageGridProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -173,6 +194,7 @@ export function WorkbenchPageGrid({
   }
 
   function deletePage(id: string) {
+    if (id === insertAfterPageId) onInsertAfterChange(null);
     onChange(pages.filter((p) => p.id !== id));
   }
 
@@ -212,6 +234,12 @@ export function WorkbenchPageGrid({
                 source={source}
                 cardWidth={cardWidth}
                 renderWidth={renderWidth}
+                isInsertTarget={page.id === insertAfterPageId}
+                onSelectInsertAfter={() =>
+                  onInsertAfterChange(
+                    insertAfterPageId === page.id ? null : page.id,
+                  )
+                }
                 onDelete={() => deletePage(page.id)}
                 onRotate={() => rotatePage(page.id)}
               />
