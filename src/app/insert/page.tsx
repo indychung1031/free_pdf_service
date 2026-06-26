@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ClearWorkButton } from "@/components/ClearWorkButton";
 import { FileDropzone } from "@/components/FileDropzone";
 import { PageRangeInput } from "@/components/PageRangeInput";
 import { ToolLayout } from "@/components/ToolLayout";
@@ -47,6 +48,19 @@ export default function InsertPage() {
       setInsertPageCount(null);
     }
   }
+
+  function handleClearWork() {
+    setBaseFile(null);
+    setInsertFile(null);
+    setBasePageCount(null);
+    setInsertPageCount(null);
+    setInsertRange("");
+    setInsertAt("1");
+    setStatus("idle");
+    setError(null);
+  }
+
+  const hasWork = Boolean(baseFile || insertFile);
 
   async function handleInsert() {
     if (!baseFile || !insertFile) {
@@ -143,6 +157,15 @@ export default function InsertPage() {
             className="rounded-lg border border-zinc-300 px-3 py-2 text-sm outline-none ring-zinc-400 focus:ring-2"
           />
         </div>
+
+        {hasWork && (
+          <div className="flex justify-end">
+            <ClearWorkButton
+              onClear={handleClearWork}
+              disabled={status === "working"}
+            />
+          </div>
+        )}
 
         <button
           type="button"

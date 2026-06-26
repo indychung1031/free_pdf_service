@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { SiteHeader } from "@/components/SiteHeader";
+import { SiteFooter } from "@/components/SiteFooter";
 import { SERVICE_NAME, SERVICE_TAGLINE } from "@/lib/branding";
 import "./globals.css";
 
@@ -15,8 +16,31 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: SERVICE_NAME,
+  title: {
+    default: SERVICE_NAME,
+    template: `%s | ${SERVICE_NAME}`,
+  },
   description: SERVICE_TAGLINE,
+  keywords: [
+    "PDF 병합",
+    "PDF 합치기",
+    "PDF 분할",
+    "PDF 페이지 삭제",
+    "무료 PDF 편집",
+    "서버 없이 PDF",
+    "온라인 PDF 도구",
+    "merge PDF free",
+    "split PDF online",
+    "PDF editor no upload",
+    "client-side PDF",
+    "free PDF tool no watermark",
+  ],
+  openGraph: {
+    title: SERVICE_NAME,
+    description: SERVICE_TAGLINE,
+    type: "website",
+    locale: "ko_KR",
+  },
 };
 
 export default function RootLayout({
@@ -32,6 +56,7 @@ export default function RootLayout({
       <body className="flex min-h-full flex-col">
         <SiteHeader />
         <main className="flex-1">{children}</main>
+        <SiteFooter />
       </body>
     </html>
   );

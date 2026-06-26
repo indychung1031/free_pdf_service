@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useState } from "react";
+import { ClearWorkButton } from "@/components/ClearWorkButton";
 import { FileDropzone } from "@/components/FileDropzone";
 import { ToolLayout } from "@/components/ToolLayout";
 import { downloadPdf } from "@/lib/pdf/download";
@@ -58,6 +59,17 @@ export default function OrganizerPage() {
     }
   }
 
+  function handleClearWork() {
+    clearPdfDocumentCache();
+    setFile(null);
+    setPdfData(null);
+    setCacheKey("");
+    setPages([]);
+    setZoom(2);
+    setStatus("idle");
+    setError(null);
+  }
+
   async function handleExport() {
     if (!file || pages.length === 0) {
       setError("보낼 페이지가 없습니다.");
@@ -94,9 +106,15 @@ export default function OrganizerPage() {
         />
 
         {file && (
-          <p className="mt-4 text-sm text-zinc-600">
-            {file.name} · {pages.length}페이지 표시 중
-          </p>
+          <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <p className="text-sm text-zinc-600">
+              {file.name} · {pages.length}페이지 표시 중
+            </p>
+            <ClearWorkButton
+              onClear={handleClearWork}
+              disabled={status === "working"}
+            />
+          </div>
         )}
 
         {pdfData && pages.length > 0 && (

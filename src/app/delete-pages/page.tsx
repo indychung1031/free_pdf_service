@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ClearWorkButton } from "@/components/ClearWorkButton";
 import { FileDropzone } from "@/components/FileDropzone";
 import { PageRangeInput } from "@/components/PageRangeInput";
 import { ToolLayout } from "@/components/ToolLayout";
@@ -31,6 +32,14 @@ export default function DeletePagesPage() {
     } catch {
       setPageCount(null);
     }
+  }
+
+  function handleClearWork() {
+    setFile(null);
+    setPageCount(null);
+    setRange("");
+    setStatus("idle");
+    setError(null);
   }
 
   async function handleDelete() {
@@ -69,7 +78,13 @@ export default function DeletePagesPage() {
         />
 
         {file && (
-          <p className="mt-4 text-sm text-zinc-600">선택: {file.name}</p>
+          <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-zinc-600">선택: {file.name}</p>
+            <ClearWorkButton
+              onClear={handleClearWork}
+              disabled={status === "working"}
+            />
+          </div>
         )}
 
         <div className="mt-6">

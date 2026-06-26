@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ClearWorkButton } from "@/components/ClearWorkButton";
 import { FileDropzone } from "@/components/FileDropzone";
 import {
   FileListDnD,
@@ -37,6 +38,15 @@ export default function MergePage() {
       setPicking(false);
     }
   }
+
+  function handleClearWork() {
+    setItems([]);
+    setStatus("idle");
+    setError(null);
+    setProgress({ current: 0, total: 0 });
+  }
+
+  const hasWork = items.length > 0;
 
   async function handleMerge() {
     if (items.length < 2) {
@@ -88,6 +98,15 @@ export default function MergePage() {
               current={progress.current}
               total={progress.total}
               label="파일 병합 중…"
+            />
+          </div>
+        )}
+
+        {hasWork && (
+          <div className="mt-6">
+            <ClearWorkButton
+              onClear={handleClearWork}
+              disabled={status === "working" || picking}
             />
           </div>
         )}

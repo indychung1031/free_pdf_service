@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ClearWorkButton } from "@/components/ClearWorkButton";
 import { FileDropzone } from "@/components/FileDropzone";
 import { PageRangeInput } from "@/components/PageRangeInput";
 import { ProgressBar } from "@/components/ProgressBar";
@@ -34,6 +35,16 @@ export default function SplitPage() {
     } catch {
       setPageCount(null);
     }
+  }
+
+  function handleClearWork() {
+    setFile(null);
+    setPageCount(null);
+    setRange("");
+    setMode("extract");
+    setStatus("idle");
+    setError(null);
+    setProgress({ current: 0, total: 0 });
   }
 
   async function handleSplit() {
@@ -80,7 +91,13 @@ export default function SplitPage() {
         />
 
         {file && (
-          <p className="mt-4 text-sm text-zinc-600">선택: {file.name}</p>
+          <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-zinc-600">선택: {file.name}</p>
+            <ClearWorkButton
+              onClear={handleClearWork}
+              disabled={status === "working"}
+            />
+          </div>
         )}
 
         <div className="mt-6 flex flex-col gap-3">
