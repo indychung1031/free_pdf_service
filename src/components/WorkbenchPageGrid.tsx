@@ -19,7 +19,8 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { useMemo, useState } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { PdfPageThumbnail } from "@/components/PdfPageThumbnail";
 import { getPreviewZoom } from "@/components/PageThumbnailGrid";
 import {
@@ -29,6 +30,10 @@ import {
   type WorkbenchSource,
 } from "@/lib/pdf/workbench-types";
 
+/** 이 페이지 수 이상이면 행 단위 가상 스크롤 (Phase 1.6e) */
+const VIRTUAL_PAGE_THRESHOLD = 24;
+const GRID_GAP_PX = 12;
+
 type WorkbenchPageGridProps = {
   pages: WorkbenchPage[];
   sources: WorkbenchSource[];
@@ -37,6 +42,10 @@ type WorkbenchPageGridProps = {
   onInsertAfterChange: (pageId: string | null) => void;
   onChange: (pages: WorkbenchPage[]) => void;
 };
+
+function estimateRowHeight(cardWidth: number) {
+  return Math.ceil(cardWidth * (4 / 3) + 88);
+}
 
 function SortableWorkbenchCard({
   page,
@@ -149,6 +158,55 @@ function SortableWorkbenchCard({
   );
 }
 
+function WorkbenchCardRow({
+  pages,
+  sources,
+  startIndex,
+  cardWidth,
+  renderWidth,
+  insertAfterPageId,
+  onInsertAfterChange,
+  onDelete,
+  onRotate,
+}: {
+  pages: WorkbenchPage[];
+  sources: Map<string, WorkbenchSource>;
+  startIndex: number;
+  cardWidth: number;
+  renderWidth: number;
+  insertAfterPageId: string | null;
+  onInsertAfterChange: (pageId: string | null) => void;
+  onDelete: (id: string) => void;
+  onRotate: (id: string) => void;
+}) {
+  return (
+    <>
+      {pages.map((page, offset) => {
+        const source = sources.get(page.sourceId);
+        if (!source) return null;
+        return (
+          <SortableWorkbenchCard
+            key={page.id}
+            page={page}
+            displayIndex={startIndex + offset + 1}
+            source={source}
+            cardWidth={cardWidth}
+            renderWidth={renderWidth}
+            isInsertTarget={page.id === insertAfterPageId}
+            onSelectInsertAfter={() =>
+              onInsertAfterChange(
+                insertAfterPageId === page.id ? null : page.id,
+              )
+            }
+            onDelete={() => onDelete(page.id)}
+            onRotate={() => onRotate(page.id)}
+          />
+        );
+      })}
+    </>
+  );
+}
+
 export function WorkbenchPageGrid({
   pages,
   sources,
@@ -158,6 +216,9 @@ export function WorkbenchPageGrid({
   onChange,
 }: WorkbenchPageGridProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [columnCount, setColumnCount] = useState(1);
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(KeyboardSensor, {
@@ -171,6 +232,37 @@ export function WorkbenchPageGrid({
   );
 
   const { cardWidth, renderWidth } = getPreviewZoom(zoom);
+  const rowHeight = estimateRowHeight(cardWidth);
+  const useVirtual = pages.length >= VIRTUAL_PAGE_THRESHOLD;
+  const rowCount = useVirtual
+    ? Math.ceil(pages.length / Math.max(columnCount, 1))
+    : 0;
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el || !useVirtual) return;
+
+    function updateColumns() {
+      const width = el?.clientWidth ?? cardWidth;
+      setColumnCount(
+        Math.max(1, Math.floor((width + GRID_GAP_PX) / (cardWidth + GRID_GAP_PX))),
+      );
+    }
+
+    updateColumns();
+    const observer = new ResizeObserver(updateColumns);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [cardWidth, useVirtual]);
+
+  const virtualizer = useVirtualizer({
+    count: rowCount,
+    getScrollElement: () => scrollRef.current,
+    estimateSize: () => rowHeight,
+    overscan: 2,
+    enabled: useVirtual,
+  });
+
   const activeIndex = pages.findIndex((p) => p.id === activeId);
   const activePage = activeIndex >= 0 ? pages[activeIndex] : null;
   const activeSource = activePage
@@ -214,6 +306,63 @@ export function WorkbenchPageGrid({
     );
   }
 
+  const gridBody = useVirtual ? (
+    <div
+      style={{
+        height: virtualizer.getTotalSize(),
+        width: "100%",
+        position: "relative",
+      }}
+    >
+      {virtualizer.getVirtualItems().map((virtualRow) => {
+        const startIndex = virtualRow.index * columnCount;
+        const rowPages = pages.slice(startIndex, startIndex + columnCount);
+        return (
+          <div
+            key={virtualRow.key}
+            data-index={virtualRow.index}
+            ref={virtualizer.measureElement}
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              transform: `translateY(${virtualRow.start}px)`,
+            }}
+          >
+            <div className="flex flex-wrap gap-3">
+              <WorkbenchCardRow
+                pages={rowPages}
+                sources={sourceById}
+                startIndex={startIndex}
+                cardWidth={cardWidth}
+                renderWidth={renderWidth}
+                insertAfterPageId={insertAfterPageId}
+                onInsertAfterChange={onInsertAfterChange}
+                onDelete={deletePage}
+                onRotate={rotatePage}
+              />
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  ) : (
+    <div className="flex flex-wrap gap-3">
+      <WorkbenchCardRow
+        pages={pages}
+        sources={sourceById}
+        startIndex={0}
+        cardWidth={cardWidth}
+        renderWidth={renderWidth}
+        insertAfterPageId={insertAfterPageId}
+        onInsertAfterChange={onInsertAfterChange}
+        onDelete={deletePage}
+        onRotate={rotatePage}
+      />
+    </div>
+  );
+
   return (
     <DndContext
       sensors={sensors}
@@ -222,29 +371,11 @@ export function WorkbenchPageGrid({
       onDragEnd={handleDragEnd}
     >
       <SortableContext items={pages.map((p) => p.id)} strategy={rectSortingStrategy}>
-        <div className="flex flex-wrap gap-3">
-          {pages.map((page, index) => {
-            const source = sourceById.get(page.sourceId);
-            if (!source) return null;
-            return (
-              <SortableWorkbenchCard
-                key={page.id}
-                page={page}
-                displayIndex={index + 1}
-                source={source}
-                cardWidth={cardWidth}
-                renderWidth={renderWidth}
-                isInsertTarget={page.id === insertAfterPageId}
-                onSelectInsertAfter={() =>
-                  onInsertAfterChange(
-                    insertAfterPageId === page.id ? null : page.id,
-                  )
-                }
-                onDelete={() => deletePage(page.id)}
-                onRotate={() => rotatePage(page.id)}
-              />
-            );
-          })}
+        <div
+          ref={scrollRef}
+          className={`max-h-[60vh] pr-1 ${useVirtual ? "overflow-y-auto" : ""}`}
+        >
+          {gridBody}
         </div>
       </SortableContext>
 
@@ -268,3 +399,5 @@ export function WorkbenchPageGrid({
     </DndContext>
   );
 }
+
+export { VIRTUAL_PAGE_THRESHOLD };

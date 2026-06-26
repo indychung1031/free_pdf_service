@@ -136,6 +136,14 @@ export default function WorkbenchPage() {
 
         {pageCount > 0 && (
           <>
+            {pageCount >= 80 && (
+              <p className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+                페이지가 {pageCount}장입니다. 기기 메모리가 부족하면{" "}
+                <strong>페이지 삭제</strong>·<strong>분할</strong> 도구를
+                이용하거나 PDF를 나눠 작업하세요.
+              </p>
+            )}
+
             <div className="mt-6 flex flex-col gap-3">
               <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs text-zinc-600">
                 {insertAfterPageId ? (
@@ -176,7 +184,7 @@ export default function WorkbenchPage() {
             </div>
             </div>
 
-            <div className="mt-4 max-h-[60vh] overflow-y-auto pr-1">
+            <div className="mt-4">
               <WorkbenchPageGrid
                 pages={pages}
                 sources={sources}
