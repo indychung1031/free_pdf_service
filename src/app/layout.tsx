@@ -43,6 +43,14 @@ export const metadata: Metadata = {
     type: "website",
     locale: "ko_KR",
   },
+  alternates: {
+    canonical: SITE_URL,
+    languages: {
+      ko: SITE_URL,
+      en: `${SITE_URL}/en`,
+      "x-default": SITE_URL,
+    },
+  },
   ...(process.env.GOOGLE_SITE_VERIFICATION
     ? {
         verification: {

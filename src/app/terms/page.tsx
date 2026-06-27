@@ -1,9 +1,6 @@
-import type { Metadata } from "next";
+import { koPageMetadata } from "@/lib/i18n/metadata";
 
-export const metadata: Metadata = {
-  title: "이용약관",
-  description: "Innovo Free PDF solution 이용약관",
-};
+export const metadata = koPageMetadata("/terms");
 
 export default function TermsPage() {
   return (

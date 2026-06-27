@@ -1,8 +1,8 @@
 import { koPageMetadata } from "@/lib/i18n/metadata";
 
-export const metadata = koPageMetadata("/workbench");
+export const metadata = koPageMetadata("/split");
 
-export default function WorkbenchLayout({
+export default function SplitLayout({
   children,
 }: {
   children: React.ReactNode;
