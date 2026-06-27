@@ -373,7 +373,7 @@ export function WorkbenchPageGrid({
       <SortableContext items={pages.map((p) => p.id)} strategy={rectSortingStrategy}>
         <div
           ref={scrollRef}
-          className={`max-h-[60vh] pr-1 ${useVirtual ? "overflow-y-auto" : ""}`}
+          className="max-h-[60dvh] overflow-y-auto overflow-x-hidden overscroll-contain pr-1"
         >
           {gridBody}
         </div>
