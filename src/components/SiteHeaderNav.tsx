@@ -3,7 +3,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LanguageSwitch } from "@/components/LanguageSwitch";
 import { SiteHeaderActions } from "@/components/SiteHeaderActions";
 import { homeHref, isEnglishPath } from "@/lib/i18n/locale";
 import { LOGO_ALT, LOGO_PATH } from "@/lib/branding";
@@ -28,7 +27,6 @@ export function SiteHeaderNav() {
         />
       </Link>
       <SiteHeaderActions />
-      <LanguageSwitch />
     </div>
   );
 }
