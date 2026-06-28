@@ -5,7 +5,7 @@ type PageMeta = {
   path: string;
   ko: { title: string; description: string };
   en: { title: string; description: string };
-  /** EN locale 대응 URL (도구는 /en 랜딩) */
+  /** EN locale 대응 URL */
   enPath: string;
   priority?: number;
 };
@@ -38,7 +38,7 @@ export const PAGE_META: PageMeta[] = [
       description:
         "Combine PDFs, reorder, delete, and rotate pages in one screen. 100% client-side — your files never leave your device.",
     },
-    enPath: "/en",
+    enPath: "/en/workbench",
     priority: 0.9,
   },
   {
@@ -52,7 +52,7 @@ export const PAGE_META: PageMeta[] = [
       description:
         "Combine multiple PDFs in order. Processed entirely in your browser — zero upload.",
     },
-    enPath: "/en",
+    enPath: "/en/merge",
     priority: 0.85,
   },
   {
@@ -66,7 +66,7 @@ export const PAGE_META: PageMeta[] = [
       description:
         "Extract page ranges or split every page into separate files. No server upload.",
     },
-    enPath: "/en",
+    enPath: "/en/split",
     priority: 0.85,
   },
   {
@@ -79,7 +79,7 @@ export const PAGE_META: PageMeta[] = [
       title: "Delete PDF Pages Free — No Upload",
       description: "Remove selected pages and download a new PDF. Client-side only.",
     },
-    enPath: "/en",
+    enPath: "/en/delete-pages",
     priority: 0.85,
   },
   {
@@ -93,7 +93,7 @@ export const PAGE_META: PageMeta[] = [
       title: "Insert PDF Pages Free — Browser Only",
       description: "Insert pages from another PDF at any position. Zero upload.",
     },
-    enPath: "/en",
+    enPath: "/en/insert",
     priority: 0.85,
   },
   {

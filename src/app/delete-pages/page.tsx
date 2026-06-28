@@ -6,6 +6,8 @@ import { FileDropzone } from "@/components/FileDropzone";
 import { PageRangeInput } from "@/components/PageRangeInput";
 import { ToolLayout } from "@/components/ToolLayout";
 import { WorkbenchCta } from "@/components/WorkbenchCta";
+import { getToolsContent } from "@/lib/i18n/content/tools";
+import { useLocale } from "@/lib/i18n/use-locale";
 import { deletePages } from "@/lib/pdf/delete-pages";
 import { downloadPdf } from "@/lib/pdf/download";
 import {
@@ -14,6 +16,7 @@ import {
 } from "@/lib/pdf/stored-pdf";
 
 export default function DeletePagesPage() {
+  const { common: c, deletePages: t } = getToolsContent(useLocale());
   const [pdf, setPdf] = useState<StoredPdf | null>(null);
   const [pageCount, setPageCount] = useState<number | null>(null);
   const [range, setRange] = useState("");
@@ -35,9 +38,7 @@ export default function DeletePagesPage() {
       setPdf({ name: stored.name, bytes: stored.bytes });
       setPageCount(stored.pageCount);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "PDF 파일을 읽을 수 없습니다.",
-      );
+      setError(err instanceof Error ? err.message : c.errorReadPdf);
       setStatus("error");
     }
   }
@@ -52,7 +53,7 @@ export default function DeletePagesPage() {
 
   async function handleDelete() {
     if (!pdf) {
-      setError("PDF 파일을 선택하세요.");
+      setError(c.errorSelectPdf);
       setStatus("error");
       return;
     }
@@ -66,30 +67,27 @@ export default function DeletePagesPage() {
       downloadPdf(bytes, name);
       setStatus("done");
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "페이지 삭제 중 오류가 발생했습니다.",
-      );
+      setError(err instanceof Error ? err.message : t.errorDelete);
       setStatus("error");
     }
   }
 
   return (
-    <ToolLayout
-      title="페이지 삭제"
-      description="지정한 페이지를 제거한 새 PDF를 만듭니다."
-    >
-      <WorkbenchCta hint="여러 PDF를 합친 뒤 페이지를 삭제·재배치하려면" />
+    <ToolLayout title={t.title} description={t.description}>
+      <WorkbenchCta hint={t.workbenchHint} />
 
       <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
         <FileDropzone
           multiple={false}
-          label="PDF 파일 선택"
+          label={c.selectPdf}
           onFiles={handleFileSelect}
         />
 
         {pdf && (
           <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-zinc-600">선택: {pdf.name}</p>
+            <p className="text-sm text-zinc-600">
+              {c.selectedPrefix} {pdf.name}
+            </p>
             <ClearWorkButton
               onClear={handleClearWork}
               disabled={status === "working"}
@@ -102,7 +100,7 @@ export default function DeletePagesPage() {
             value={range}
             onChange={setRange}
             pageCount={pageCount}
-            label="삭제할 페이지"
+            label={t.deleteLabel}
           />
         </div>
 
@@ -112,11 +110,11 @@ export default function DeletePagesPage() {
           disabled={!pdf || !range.trim() || status === "working"}
           className="mt-6 w-full rounded-xl bg-zinc-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-300"
         >
-          {status === "working" ? "처리 중…" : "삭제 후 다운로드"}
+          {status === "working" ? c.processing : t.submit}
         </button>
 
         {status === "done" && (
-          <p className="mt-3 text-center text-sm text-green-700">완료되었습니다.</p>
+          <p className="mt-3 text-center text-sm text-green-700">{c.done}</p>
         )}
         {error && (
           <p className="mt-3 text-center text-sm text-red-600">{error}</p>

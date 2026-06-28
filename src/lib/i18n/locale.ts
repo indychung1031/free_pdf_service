@@ -8,23 +8,19 @@ export function homeHref(locale: Locale): string {
   return locale === "en" ? "/en" : "/";
 }
 
-/** KO ↔ EN 경로 매핑 (도구 페이지는 EN 랜딩으로) */
+/** KO ↔ EN 경로 매핑 */
 export function localeHref(pathname: string, target: Locale): string {
   const en = isEnglishPath(pathname);
+  const koPath = en ? (pathname === "/en" ? "/" : pathname.slice(3)) : pathname;
 
   if (target === "en") {
     if (en) return pathname;
-    if (pathname === "/") return "/en";
-    if (pathname === "/faq") return "/en/faq";
-    if (pathname === "/privacy") return "/en/privacy";
-    if (pathname === "/terms") return "/en/terms";
-    return "/en";
+    if (koPath === "/") return "/en";
+    return `/en${koPath}`;
   }
 
   if (!en) return pathname;
-  if (pathname === "/en") return "/";
-  const rest = pathname.slice(3);
-  return rest || "/";
+  return koPath || "/";
 }
 
 export function footerLinks(locale: Locale) {

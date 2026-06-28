@@ -6,6 +6,8 @@ import { FileDropzone } from "@/components/FileDropzone";
 import { PageRangeInput } from "@/components/PageRangeInput";
 import { ToolLayout } from "@/components/ToolLayout";
 import { WorkbenchCta } from "@/components/WorkbenchCta";
+import { getToolsContent } from "@/lib/i18n/content/tools";
+import { useLocale } from "@/lib/i18n/use-locale";
 import { downloadPdf } from "@/lib/pdf/download";
 import { insertPages } from "@/lib/pdf/insert";
 import {
@@ -14,6 +16,7 @@ import {
 } from "@/lib/pdf/stored-pdf";
 
 export default function InsertPage() {
+  const { common: c, insert: t } = getToolsContent(useLocale());
   const [basePdf, setBasePdf] = useState<StoredPdf | null>(null);
   const [insertPdf, setInsertPdf] = useState<StoredPdf | null>(null);
   const [basePageCount, setBasePageCount] = useState<number | null>(null);
@@ -70,14 +73,14 @@ export default function InsertPage() {
 
   async function handleInsert() {
     if (!basePdf || !insertPdf) {
-      setError("기본 PDF와 삽입할 PDF를 모두 선택하세요.");
+      setError(t.errorBothPdfs);
       setStatus("error");
       return;
     }
 
     const at = Number(insertAt);
     if (!Number.isInteger(at) || at < 1) {
-      setError("삽입 위치는 1 이상의 정수여야 합니다.");
+      setError(t.errorInsertAt);
       setStatus("error");
       return;
     }
@@ -96,47 +99,44 @@ export default function InsertPage() {
       downloadPdf(bytes, name);
       setStatus("done");
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "페이지 삽입 중 오류가 발생했습니다.",
-      );
+      setError(err instanceof Error ? err.message : t.errorInsert);
       setStatus("error");
     }
   }
 
   return (
-    <ToolLayout
-      title="페이지 삽입"
-      description="다른 PDF의 페이지를 기본 문서의 원하는 위치에 넣습니다."
-    >
-      <WorkbenchCta hint="여러 PDF를 합치고 원하는 위치에 페이지를 넣으려면" />
+    <ToolLayout title={t.title} description={t.description}>
+      <WorkbenchCta hint={t.workbenchHint} />
 
       <section className="flex flex-col gap-6 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
         <div>
-          <p className="mb-2 text-sm font-medium text-zinc-700">1. 기본 PDF</p>
+          <p className="mb-2 text-sm font-medium text-zinc-700">{t.basePdf}</p>
           <FileDropzone
             multiple={false}
-            label="기본 PDF 선택"
+            label={t.selectBase}
             onFiles={handleBaseFileSelect}
           />
           {basePdf && (
             <p className="mt-2 text-sm text-zinc-600">
               {basePdf.name}
-              {basePageCount !== null && ` · ${basePageCount}페이지`}
+              {basePageCount !== null &&
+                ` · ${c.pagesSuffix(basePageCount)}`}
             </p>
           )}
         </div>
 
         <div>
-          <p className="mb-2 text-sm font-medium text-zinc-700">2. 삽입할 PDF</p>
+          <p className="mb-2 text-sm font-medium text-zinc-700">{t.insertPdf}</p>
           <FileDropzone
             multiple={false}
-            label="삽입할 PDF 선택"
+            label={t.selectInsert}
             onFiles={handleInsertFileSelect}
           />
           {insertPdf && (
             <p className="mt-2 text-sm text-zinc-600">
               {insertPdf.name}
-              {insertPageCount !== null && ` · ${insertPageCount}페이지`}
+              {insertPageCount !== null &&
+                ` · ${c.pagesSuffix(insertPageCount)}`}
             </p>
           )}
         </div>
@@ -145,15 +145,15 @@ export default function InsertPage() {
           value={insertRange}
           onChange={setInsertRange}
           pageCount={insertPageCount}
-          label="삽입할 페이지 (삽입 PDF 기준)"
+          label={t.insertRangeLabel}
         />
 
         <div className="flex flex-col gap-2">
           <label className="text-sm font-medium text-zinc-700">
-            삽입 위치 (기본 PDF 기준, 해당 페이지 앞에 삽입)
+            {t.insertAtLabel}
             {basePageCount !== null && (
               <span className="ml-2 font-normal text-zinc-500">
-                맨 뒤: {basePageCount + 1}
+                {t.insertAtEnd(basePageCount + 1)}
               </span>
             )}
           </label>
@@ -186,11 +186,11 @@ export default function InsertPage() {
           }
           className="w-full rounded-xl bg-zinc-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-300"
         >
-          {status === "working" ? "처리 중…" : "삽입 후 다운로드"}
+          {status === "working" ? c.processing : t.submit}
         </button>
 
         {status === "done" && (
-          <p className="text-center text-sm text-green-700">완료되었습니다.</p>
+          <p className="text-center text-sm text-green-700">{c.done}</p>
         )}
         {error && (
           <p className="text-center text-sm text-red-600">{error}</p>

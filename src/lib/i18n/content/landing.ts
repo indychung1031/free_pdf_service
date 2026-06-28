@@ -91,27 +91,27 @@ const TOOLS_KO: LandingTool[] = [
 
 const TOOLS_EN: LandingTool[] = [
   {
-    href: "/workbench",
+    href: "/en/workbench",
     title: "PDF Workbench",
     description: "Merge, delete, reorder, and insert pages — all in one screen.",
   },
   {
-    href: "/merge",
+    href: "/en/merge",
     title: "Merge PDF",
     description: "Combine multiple PDFs in the order you choose.",
   },
   {
-    href: "/split",
+    href: "/en/split",
     title: "Split PDF",
     description: "Extract page ranges or split into one file per page (ZIP).",
   },
   {
-    href: "/delete-pages",
+    href: "/en/delete-pages",
     title: "Delete pages",
     description: "Remove selected pages and download a new PDF.",
   },
   {
-    href: "/insert",
+    href: "/en/insert",
     title: "Insert pages",
     description: "Insert pages from another PDF at any position.",
   },
@@ -166,8 +166,6 @@ export function getLandingContent(locale: Locale): LandingContent {
       faqHeading: "FAQ",
       faqLink: "Full FAQ →",
       faqHref: "/en/faq",
-      toolUiNotice:
-        "Tool screens are currently in Korean. PDF processing works the same — icons and buttons are easy to follow.",
       features: FEATURES_EN,
       tools: TOOLS_EN,
       faqs: FAQS_EN,

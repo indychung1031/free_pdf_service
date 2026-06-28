@@ -23,6 +23,8 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { PdfPageThumbnail } from "@/components/PdfPageThumbnail";
 import { getPreviewZoom } from "@/components/PageThumbnailGrid";
+import { getToolsContent } from "@/lib/i18n/content/tools";
+import { useLocale } from "@/lib/i18n/use-locale";
 import {
   bytesToArrayBuffer,
   rotateClockwise,
@@ -57,6 +59,7 @@ function SortableWorkbenchCard({
   onSelectInsertAfter,
   onDelete,
   onRotate,
+  labels,
 }: {
   page: WorkbenchPage;
   displayIndex: number;
@@ -67,6 +70,13 @@ function SortableWorkbenchCard({
   onSelectInsertAfter: () => void;
   onDelete: () => void;
   onRotate: () => void;
+  labels: {
+    dragReorder: string;
+    insertTargetTitle: string;
+    rotateTitle: string;
+    deleteTitle: string;
+    deleteButton: string;
+  };
 }) {
   const {
     attributes,
@@ -101,7 +111,7 @@ function SortableWorkbenchCard({
       <button
         type="button"
         className="absolute left-2 top-2 z-10 cursor-grab rounded bg-white/90 px-1.5 py-0.5 text-xs text-zinc-500 shadow active:cursor-grabbing"
-        aria-label="드래그하여 순서 변경"
+        aria-label={labels.dragReorder}
         {...attributes}
         {...listeners}
       >
@@ -123,7 +133,7 @@ function SortableWorkbenchCard({
         }}
         role="button"
         tabIndex={0}
-        title="클릭하면 다음 추가 PDF가 이 페이지 뒤에 삽입됩니다"
+        title={labels.insertTargetTitle}
       >
         <PdfPageThumbnail
           key={`${page.id}-${renderWidth}`}
@@ -141,7 +151,7 @@ function SortableWorkbenchCard({
           type="button"
           onClick={onRotate}
           className="rounded bg-zinc-100 px-2 py-1 text-xs hover:bg-zinc-200"
-          title="90° 회전"
+          title={labels.rotateTitle}
         >
           ↻
         </button>
@@ -149,9 +159,9 @@ function SortableWorkbenchCard({
           type="button"
           onClick={onDelete}
           className="rounded bg-red-50 px-2 py-1 text-xs text-red-600 hover:bg-red-100"
-          title="삭제"
+          title={labels.deleteTitle}
         >
-          삭제
+          {labels.deleteButton}
         </button>
       </div>
     </div>
@@ -168,6 +178,7 @@ function WorkbenchCardRow({
   onInsertAfterChange,
   onDelete,
   onRotate,
+  labels,
 }: {
   pages: WorkbenchPage[];
   sources: Map<string, WorkbenchSource>;
@@ -178,6 +189,13 @@ function WorkbenchCardRow({
   onInsertAfterChange: (pageId: string | null) => void;
   onDelete: (id: string) => void;
   onRotate: (id: string) => void;
+  labels: {
+    dragReorder: string;
+    insertTargetTitle: string;
+    rotateTitle: string;
+    deleteTitle: string;
+    deleteButton: string;
+  };
 }) {
   return (
     <>
@@ -200,6 +218,7 @@ function WorkbenchCardRow({
             }
             onDelete={() => onDelete(page.id)}
             onRotate={() => onRotate(page.id)}
+            labels={labels}
           />
         );
       })}
@@ -215,6 +234,14 @@ export function WorkbenchPageGrid({
   onInsertAfterChange,
   onChange,
 }: WorkbenchPageGridProps) {
+  const labels = getToolsContent(useLocale()).workbench;
+  const cardLabels = {
+    dragReorder: labels.dragReorder,
+    insertTargetTitle: labels.insertTargetTitle,
+    rotateTitle: labels.rotateTitle,
+    deleteTitle: labels.deleteTitle,
+    deleteButton: labels.deleteButton,
+  };
   const [activeId, setActiveId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [columnCount, setColumnCount] = useState(1);
@@ -301,7 +328,7 @@ export function WorkbenchPageGrid({
   if (pages.length === 0) {
     return (
       <p className="py-8 text-center text-sm text-zinc-500">
-        PDF를 추가하면 페이지가 여기에 표시됩니다.
+        {labels.emptyGrid}
       </p>
     );
   }
@@ -341,6 +368,7 @@ export function WorkbenchPageGrid({
                 onInsertAfterChange={onInsertAfterChange}
                 onDelete={deletePage}
                 onRotate={rotatePage}
+                labels={cardLabels}
               />
             </div>
           </div>
@@ -359,6 +387,7 @@ export function WorkbenchPageGrid({
         onInsertAfterChange={onInsertAfterChange}
         onDelete={deletePage}
         onRotate={rotatePage}
+        labels={cardLabels}
       />
     </div>
   );

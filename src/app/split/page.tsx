@@ -6,6 +6,8 @@ import { FileDropzone } from "@/components/FileDropzone";
 import { PageRangeInput } from "@/components/PageRangeInput";
 import { ProgressBar } from "@/components/ProgressBar";
 import { ToolLayout } from "@/components/ToolLayout";
+import { getToolsContent } from "@/lib/i18n/content/tools";
+import { useLocale } from "@/lib/i18n/use-locale";
 import { downloadPdf, downloadPdfZip } from "@/lib/pdf/download";
 import { splitPdf, type SplitMode } from "@/lib/pdf/split";
 import {
@@ -14,6 +16,7 @@ import {
 } from "@/lib/pdf/stored-pdf";
 
 export default function SplitPage() {
+  const { common: c, split: t } = getToolsContent(useLocale());
   const [pdf, setPdf] = useState<StoredPdf | null>(null);
   const [pageCount, setPageCount] = useState<number | null>(null);
   const [mode, setMode] = useState<SplitMode>("extract");
@@ -37,9 +40,7 @@ export default function SplitPage() {
       setPdf({ name: stored.name, bytes: stored.bytes });
       setPageCount(stored.pageCount);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "PDF 파일을 읽을 수 없습니다.",
-      );
+      setError(err instanceof Error ? err.message : c.errorReadPdf);
       setStatus("error");
     }
   }
@@ -56,7 +57,7 @@ export default function SplitPage() {
 
   async function handleSplit() {
     if (!pdf) {
-      setError("PDF 파일을 선택하세요.");
+      setError(c.errorSelectPdf);
       setStatus("error");
       return;
     }
@@ -81,26 +82,25 @@ export default function SplitPage() {
       }
       setStatus("done");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "분할 중 오류가 발생했습니다.");
+      setError(err instanceof Error ? err.message : t.errorSplit);
       setStatus("error");
     }
   }
 
   return (
-    <ToolLayout
-      title="PDF 분할"
-      description="페이지 범위 추출 또는 페이지마다 개별 파일로 분할합니다."
-    >
+    <ToolLayout title={t.title} description={t.description}>
       <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
         <FileDropzone
           multiple={false}
-          label="PDF 파일 선택"
+          label={c.selectPdf}
           onFiles={handleFileSelect}
         />
 
         {pdf && (
           <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-zinc-600">선택: {pdf.name}</p>
+            <p className="text-sm text-zinc-600">
+              {c.selectedPrefix} {pdf.name}
+            </p>
             <ClearWorkButton
               onClear={handleClearWork}
               disabled={status === "working"}
@@ -116,7 +116,7 @@ export default function SplitPage() {
               checked={mode === "extract"}
               onChange={() => setMode("extract")}
             />
-            범위 추출 (지정 페이지만 하나의 PDF로)
+            {t.modeExtract}
           </label>
           <label className="flex cursor-pointer items-center gap-2 text-sm">
             <input
@@ -125,7 +125,7 @@ export default function SplitPage() {
               checked={mode === "each-page"}
               onChange={() => setMode("each-page")}
             />
-            페이지마다 분할 (ZIP으로 다운로드)
+            {t.modeEachPage}
           </label>
         </div>
 
@@ -135,7 +135,7 @@ export default function SplitPage() {
               value={range}
               onChange={setRange}
               pageCount={pageCount}
-              label="추출할 페이지"
+              label={t.extractLabel}
             />
           </div>
         )}
@@ -145,7 +145,7 @@ export default function SplitPage() {
             <ProgressBar
               current={progress.current}
               total={progress.total}
-              label="분할 처리 중…"
+              label={t.splitting}
             />
           </div>
         )}
@@ -156,11 +156,11 @@ export default function SplitPage() {
           disabled={!pdf || status === "working"}
           className="mt-6 w-full rounded-xl bg-zinc-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-300"
         >
-          {status === "working" ? "처리 중…" : "분할 후 다운로드"}
+          {status === "working" ? c.processing : t.submit}
         </button>
 
         {status === "done" && (
-          <p className="mt-3 text-center text-sm text-green-700">완료되었습니다.</p>
+          <p className="mt-3 text-center text-sm text-green-700">{c.done}</p>
         )}
         {error && (
           <p className="mt-3 text-center text-sm text-red-600">{error}</p>

@@ -10,10 +10,13 @@ import {
 } from "@/components/FileListDnD";
 import { ProgressBar } from "@/components/ProgressBar";
 import { ToolLayout } from "@/components/ToolLayout";
+import { getToolsContent } from "@/lib/i18n/content/tools";
+import { useLocale } from "@/lib/i18n/use-locale";
 import { downloadPdf } from "@/lib/pdf/download";
 import { mergePdfs } from "@/lib/pdf/merge";
 
 export default function MergePage() {
+  const { common: c, merge: t } = getToolsContent(useLocale());
   const [items, setItems] = useState<ListedFile[]>([]);
   const [status, setStatus] = useState<"idle" | "working" | "done" | "error">(
     "idle",
@@ -30,9 +33,7 @@ export default function MergePage() {
       setItems((prev) => [...prev, ...listed]);
       setStatus("idle");
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "PDF 파일을 읽을 수 없습니다.",
-      );
+      setError(err instanceof Error ? err.message : c.errorReadPdf);
       setStatus("error");
     } finally {
       setPicking(false);
@@ -50,7 +51,7 @@ export default function MergePage() {
 
   async function handleMerge() {
     if (items.length < 2) {
-      setError("병합하려면 PDF 파일을 2개 이상 선택하세요.");
+      setError(t.errorMinFiles);
       setStatus("error");
       return;
     }
@@ -66,22 +67,17 @@ export default function MergePage() {
       downloadPdf(bytes, "merged.pdf");
       setStatus("done");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "병합 중 오류가 발생했습니다.");
+      setError(err instanceof Error ? err.message : t.errorMerge);
       setStatus("error");
     }
   }
 
   return (
-    <ToolLayout
-      title="PDF 병합"
-      description="파일은 브라우저에서만 처리됩니다. 서버로 전송되지 않습니다."
-    >
+    <ToolLayout title={t.title} description={t.description}>
       <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
         <FileDropzone
           onFiles={handleAddFiles}
-          label={
-            picking ? "PDF 읽는 중…" : "PDF 파일 선택 (드래그 또는 클릭)"
-          }
+          label={picking ? c.readingPdf : t.dropLabel}
         />
 
         <div className="mt-6">
@@ -97,7 +93,7 @@ export default function MergePage() {
             <ProgressBar
               current={progress.current}
               total={progress.total}
-              label="파일 병합 중…"
+              label={t.merging}
             />
           </div>
         )}
@@ -117,13 +113,11 @@ export default function MergePage() {
           disabled={items.length < 2 || status === "working" || picking}
           className="mt-6 w-full rounded-xl bg-zinc-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-300"
         >
-          {status === "working" ? "처리 중…" : "병합 후 다운로드"}
+          {status === "working" ? c.processing : t.submit}
         </button>
 
         {status === "done" && (
-          <p className="mt-3 text-center text-sm text-green-700">
-            병합이 완료되었습니다.
-          </p>
+          <p className="mt-3 text-center text-sm text-green-700">{t.done}</p>
         )}
         {error && (
           <p className="mt-3 text-center text-sm text-red-600">{error}</p>

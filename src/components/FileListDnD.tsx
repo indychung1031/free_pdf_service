@@ -19,6 +19,8 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 
 import { readPdfBytes } from "@/lib/pdf/read-bytes";
+import { getToolsContent } from "@/lib/i18n/content/tools";
+import { useLocale } from "@/lib/i18n/use-locale";
 
 export type ListedFile = { id: string; name: string; bytes: Uint8Array };
 
@@ -32,10 +34,14 @@ function SortableFileItem({
   item,
   index,
   onRemove,
+  dragLabel,
+  removeLabel,
 }: {
   item: ListedFile;
   index: number;
   onRemove: (id: string) => void;
+  dragLabel: string;
+  removeLabel: string;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: item.id });
@@ -55,7 +61,7 @@ function SortableFileItem({
       <button
         type="button"
         className="cursor-grab touch-none px-1 text-zinc-400 active:cursor-grabbing"
-        aria-label="드래그하여 순서 변경"
+        aria-label={dragLabel}
         {...attributes}
         {...listeners}
       >
@@ -68,7 +74,7 @@ function SortableFileItem({
         type="button"
         onClick={() => onRemove(item.id)}
         className="rounded px-2 py-1 text-red-600 hover:bg-red-50"
-        aria-label="삭제"
+        aria-label={removeLabel}
       >
         ✕
       </button>
@@ -77,6 +83,7 @@ function SortableFileItem({
 }
 
 export function FileListDnD({ items, onReorder, onRemove }: FileListDnDProps) {
+  const { common: t } = getToolsContent(useLocale());
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -114,6 +121,8 @@ export function FileListDnD({ items, onReorder, onRemove }: FileListDnDProps) {
               item={item}
               index={index}
               onRemove={onRemove}
+              dragLabel={t.dragReorder}
+              removeLabel={t.remove}
             />
           ))}
         </ol>
