@@ -1,4 +1,5 @@
 import { AdminStatusLink } from "@/components/AdminStatusLink";
+import { SiteHeaderActions } from "@/components/SiteHeaderActions";
 import { LanguageSwitch } from "@/components/LanguageSwitch";
 import { SiteHeaderNav } from "@/components/SiteHeaderNav";
 import { SERVICE_NAME } from "@/lib/branding";
@@ -12,8 +13,9 @@ export function SiteHeader() {
           {SERVICE_NAME}
         </p>
         <div className="flex items-center justify-end gap-2">
-          <AdminStatusLink />
+          <SiteHeaderActions />
           <LanguageSwitch />
+          <AdminStatusLink />
         </div>
       </div>
     </header>
